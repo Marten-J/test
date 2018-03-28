@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------------------
 --
--- level1.lua
+-- level.lua
 --
 -----------------------------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ function scene:create( event )
 	background:setFillColor( .5 )
 	
 	-- make a crate (off-screen), position it, and rotate slightly
-	local crate = display.newImageRect( "assets/crate.png", 90, 90 )
+	local crate = display.newImageRect( "assets/level/crate.png", 90, 90 )
 	crate.x, crate.y = 160, -100
 	crate.rotation = 15
 	
@@ -48,7 +48,7 @@ function scene:create( event )
 	physics.addBody( crate, { density=1.0, friction=0.3, bounce=0.3 } )
 	
 	-- create a grass object and add physics (with custom shape)
-	local grass = display.newImageRect( "assets/grass.png", screenW, 82 )
+	local grass = display.newImageRect( "assets/level/grass.png", screenW, 82 )
 	grass.anchorX = 0
 	grass.anchorY = 1
 	--  draw the grass at the very bottom of the screen
