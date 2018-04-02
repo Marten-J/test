@@ -5,6 +5,7 @@
 -----------------------------------------------------------------------------------------
 
 local composer = require( "composer" )
+local jslib = require( "simpleJoystick" )
 local scene = composer.newScene()
 
 -- include Corona's "physics" library
@@ -14,6 +15,18 @@ local physics = require "physics"
 
 -- forward declarations and other locals
 local screenW, screenH, halfW = display.actualContentWidth, display.actualContentHeight, display.contentCenterX
+local shootBut = display.newCircle( screenW - 100, screenH - 45 , 30 )
+local bulletSpeed = 2
+
+-- shoot function
+local function onPressShot( event )
+	if ( event.phase == "began" ) then
+		shootBut:setFillColor(0.4 , 0.4, 0.4)
+    elseif ( event.phase == "ended" ) then
+        shootBut:setFillColor(0.7 , 0.7, 0.7)
+    end
+	return true	
+end
 
 function scene:create( event )
 
@@ -29,39 +42,60 @@ function scene:create( event )
 	physics.start()
 	physics.pause()
 
-
-	-- create a grey rectangle as the backdrop
-	-- the physical screen will likely be a different shape than our defined content area
-	-- since we are going to position the background from it's top, left corner, draw the
-	-- background at the real top, left corner.
+	-- create Player
+	local player = display.newCircle( display.contentCenterX, display.contentCenterY , 20 )
+	player:setFillColor(1 , 0.1, 0.15)
+	-- create joystick
+	local js = jslib.new( 35, 50 )
+	js.x = display.screenOriginX + 60
+	js.y = screenH - 60
+	-- set shoot button
+	shootBut:setFillColor(0.7 , 0.7, 0.7)
+	shootBut:addEventListener("touch", onPressShot );
+	-- create background
 	local background = display.newRect( display.screenOriginX, display.screenOriginY, screenW, screenH )
 	background.anchorX = 0 
 	background.anchorY = 0
-	background:setFillColor( .5 )
+	background:setFillColor( 0.1, 0.1, 0.1 )
+
+
+	-- movment function
+ 	function catchTimer( e )
+		local x = math.cos(math.rad(js:getAngle())) * js:getDistance() 
+		local y = math.sin(math.rad(js:getAngle())) * js:getDistance() * -1
+		player:translate(x , y)
+		return true
+	end
+
+	js:activate()
+	timer.performWithDelay( 20, catchTimer, -1 )
+
+
+	-- create Computer
+	-- local player = display.newCircle( display.contentCenterX, display.contentCenterY , 20 )
+	-- player:setFillColor(0.3 , 0.65, 0.95)
+
+
 	
-	-- make a crate (off-screen), position it, and rotate slightly
-	local crate = display.newImageRect( "assets/level/crate.png", 90, 90 )
-	crate.x, crate.y = 160, -100
-	crate.rotation = 15
-	
+
 	-- add physics to the crate
-	physics.addBody( crate, { density=1.0, friction=0.3, bounce=0.3 } )
+	-- physics.addBody( crate, { density=1.0, friction=0.3, bounce=0.3 } )
 	
 	-- create a grass object and add physics (with custom shape)
-	local grass = display.newImageRect( "assets/level/grass.png", screenW, 82 )
-	grass.anchorX = 0
-	grass.anchorY = 1
+	--local grass = display.newImageRect( "assets/level/grass.png", screenW, 82 )
+	--grass.anchorX = 0
+	---grass.anchorY = 1
 	--  draw the grass at the very bottom of the screen
-	grass.x, grass.y = display.screenOriginX, display.actualContentHeight + display.screenOriginY
+	--grass.x, grass.y = display.screenOriginX, display.actualContentHeight + display.screenOriginY
 	
 	-- define a shape that's slightly shorter than image bounds (set draw mode to "hybrid" or "debug" to see)
-	local grassShape = { -halfW,-34, halfW,-34, halfW,34, -halfW,34 }
-	physics.addBody( grass, "static", { friction=0.3, shape=grassShape } )
+	--local grassShape = { -halfW,-34, halfW,-34, halfW,34, -halfW,34 }
+	--physics.addBody( grass, "static", { friction=0.3, shape=grassShape } )
 	
 	-- all display objects must be inserted into group
 	sceneGroup:insert( background )
-	sceneGroup:insert( grass)
-	sceneGroup:insert( crate )
+	sceneGroup:insert( player )
+	sceneGroup:insert( shootBut )
 end
 
 
